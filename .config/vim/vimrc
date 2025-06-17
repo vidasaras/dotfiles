@@ -1,0 +1,259 @@
+" ~/.vimrc
+" Minimal configuration for multi-language development
+
+"--------------------------------------------------------------
+" General Settings
+"--------------------------------------------------------------
+set nocompatible            " Disable vi compatibility
+set encoding=utf-8          " Set default encoding
+set fileformats=unix,dos,mac " Handle different line endings
+syntax enable               " Enable syntax processing
+set autoread                " Reload files changed outside Vim
+set hidden                  " Allow background buffers without saving
+set mouse=a                 " Enable mouse support
+set clipboard=unnamedplus
+
+"--------------------------------------------------------------
+" UI Configuration
+"--------------------------------------------------------------
+set number                  " Show line numbers
+set ruler                   " Show cursor position
+set showcmd                 " Show command in bottom bar
+set wildmenu                " Visual autocomplete for commands
+set wildmode=longest:full,full " Better tab completion
+set laststatus=2            " Always show status line
+set title                   " Set terminal title
+set t_Co=256                " Enable 256 colors
+
+" Highlight trailing whitespace
+highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+$/
+
+" Remove trailing whitespace on save
+autocmd BufWritePre * :%s/\s\+$//e
+
+" Color scheme (choose one from your available built-in schemes)
+colorscheme default          " Good default dark theme
+" colorscheme slate         " Alternative dark theme
+" colorscheme morning       " Light theme
+
+"--------------------------------------------------------------
+" Text Formatting & Indentation
+"--------------------------------------------------------------
+set autoindent              " Maintain indent of current line
+set smartindent             " Better automatic indentation
+set nowrap                  " Don't wrap lines
+set tabstop=4               " Visual spaces per TAB
+set softtabstop=4           " Spaces per TAB when editing
+set shiftwidth=4            " Spaces for autoindent
+set expandtab               " Use spaces instead of tabs
+set shiftround              " Round indent to multiple of shiftwidth
+set textwidth=80            " Line wrap at 80 characters
+set formatoptions=croqn     " Automatic formatting options
+set colorcolumn=80
+highlight ColorColumn ctermbg=darkgray guibg=darkgray
+
+" Filetype-specific indentation
+autocmd FileType c,cpp setlocal ts=2 sts=2 sw=2
+autocmd FileType javascript,typescript,json setlocal ts=2 sts=2 sw=2
+autocmd FileType lua setlocal ts=3 sts=3 sw=3
+autocmd FileType python setlocal ts=4 sts=4 sw=4
+autocmd FileType markdown,text setlocal wrap linebreak nolist
+
+"--------------------------------------------------------------
+" Search & Navigation
+"--------------------------------------------------------------
+set incsearch               " Search as characters are entered
+set hlsearch                " Highlight matches
+set ignorecase              " Case-insensitive search
+set smartcase               " Case-sensitive if uppercase present
+set path+=**                " Search down into subfolders
+set wildignore+=*.o,*.obj,*.pyc,*.so,*.swp " Ignore binary files
+set wildignore+=*/node_modules/*,*/build/*,*/dist/*
+
+" Use system clipboard
+if has('clipboard')
+    set clipboard^=unnamed,unnamedplus
+endif
+
+"--------------------------------------------------------------
+" Code Navigation & Documentation
+"--------------------------------------------------------------
+set tags=./tags,tags;$HOME  " Look for tags files up to home dir
+set keywordprg=:help        " Use K to look up documentation
+
+" Enable better autocompletion
+set complete=.,w,b,u,t,i " Sources for completion
+set completeopt=menuone,preview,noinsert,noselect " Better completion menu
+
+" Trigger completion with Tab
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+" Omni-completion setup
+set omnifunc=syntaxcomplete#Complete
+autocmd FileType c,cpp setlocal omnifunc=ccomplete#Complete
+autocmd FileType python setlocal omnifunc=python3complete#Complete
+autocmd FileType javascript,typescript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType lua setlocal omnifunc=luacomplete#Complete
+autocmd FileType html setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+
+
+"--------------------------------------------------------------
+" Build & Error Handling
+"--------------------------------------------------------------
+set makeprg=make\ -j4      " Default build command
+set errorformat=%f:%l:%c:%m " Standard error format
+
+" Quickfix list navigation
+map <F9>  :make!<CR>:copen<CR>
+map <F10> :cnext<CR>
+map <F11> :cprevious<CR>
+map <F12> :cclose<CR>
+
+"--------------------------------------------------------------
+" Language-specific Settings
+"--------------------------------------------------------------
+" C/C++ Development
+autocmd FileType c,cpp setlocal commentstring=//\ %s
+autocmd FileType c,cpp setlocal foldmethod=syntax
+
+" Python Development
+autocmd FileType python setlocal foldmethod=indent
+
+" Markdown/Text Writing
+autocmd FileType markdown,text setlocal spell spelllang=en_us
+autocmd FileType markdown setlocal conceallevel=2
+
+" JSON Formatting
+autocmd FileType json setlocal conceallevel=0
+
+"--------------------------------------------------------------
+" Key Mappings
+"--------------------------------------------------------------
+let mapleader = " "         " Set leader key
+
+" Quick buffer navigation
+nnoremap <leader>n :bnext<CR>
+nnoremap <leader>p :bprevious<CR>
+
+" Clear search highlights
+nnoremap <silent> <leader><space> :nohlsearch<CR>
+
+" Quick edit/source vimrc
+nnoremap <leader>ev :vsplit $MYVIMRC<CR>
+nnoremap <leader>sv :source $MYVIMRC<CR>
+
+nnoremap <leader>s :nohlsearch<CR>
+
+nnoremap <leader>f :find *
+
+let g:formatdef_prettierjs = '"prettier --stdin-filepath " . shellescape(expand("%"))'
+let g:formatters_javascript = ['prettierjs']
+nnoremap <leader>F :Autoformat<CR>
+
+" Buffers
+nnoremap <leader>bn :bn<CR>
+nnoremap <leader>bp :bp<CR>
+nnoremap <leader>bd :bd<CR>
+set wildcharm=<C-z>
+nnoremap <leader>bb :b<Space><C-z>
+
+"--------------------------------------------------------------
+" File Type Detection
+"--------------------------------------------------------------
+filetype plugin indent on   " Enable filetype detection
+
+" Recognize TypeScript and Modern JavaScript
+autocmd BufNewFile,BufRead *.ts set filetype=typescript
+autocmd BufNewFile,BufRead *.tsx set filetype=typescript
+autocmd BufNewFile,BufRead *.js set filetype=javascript
+
+"--------------------------------------------------------------
+" Backup & Undo Settings
+"--------------------------------------------------------------
+set backup                  " Enable backups
+set writebackup             " Enable backup while writing
+set undofile                " Persistent undo
+
+" Set directories for backup files
+set backupdir=~/.config/vim/backup//
+set directory=~/.config/vim/swap//
+set undodir=~/.config/vim/undo//
+
+"-------------------------------------------------------------
+" NOTES Intergration
+"-------------------------------------------------------------
+
+" Mark todo as done with current date
+nnoremap td :s/- \[ \]/- [x]/ \| s/$/ @finish(<C-R>=strftime("%Y-%m-%d")<CR>)/<CR>
+
+" Add start date to todo
+nnoremap ts :s/$/ @start(<C-R>=strftime("%Y-%m-%d")<CR>)/<CR>
+
+" Toggle todo state
+" nnoremap tt :s/- \[ \]/- [x]/ \| s/- \[x\]/- [ ]/<CR>
+
+" Insert current date in YYYY-MM-DD format
+inoremap <expr> <C-D>d strftime("%Y-%m-%d")
+
+" Todo Priority Cycling
+" nnoremap <leader>tp :s/@priority(\w\+)/@priority(<C-R>=Trim(substitute(matchstr(getline('.'), '@priority(\zs\w\+\ze)'), 'high\|medium\|low', '\=substitute(submatch(0), "high", "medium", "")', ''))<CR>)/<CR>
+
+" Jump between todos
+nnoremap tj /- \[[ x]\]<CR>
+
+" Smart todo insertion
+inoremap <expr> <C-T> TodoInsert()
+function! TodoInsert()
+    let l:date = strftime("%Y-%m-%d")
+    return "- [ ]  @priority(medium) @start(".l:date.") @due()"
+endfunction
+
+" Note template detection
+autocmd BufNewFile ~/notes/*.md call InboxTemplate()
+
+function! InboxTemplate()
+    let date = strftime("%Y-%m-%d")
+    call setline(1, [
+                \ '---',
+                \ 'date: '.date,
+                \ 'topics: [inbox]',
+                \ '---',
+                \ '',
+                \ '# '.expand('%:t:r'),
+                \ '',
+                \ '## Content',
+                \ '',
+                \ '## Action Items',
+                \ '- [ ] ',
+                \ '',
+                \ '## Links',
+                \ ''
+                \ ])
+endfunction
+
+vnoremap <C-c> :w !xclip -selection clipboard<CR><CR>
+nnoremap <F6> :read !xclip -o<CR>
+
+" Yank visually selected text into register 'a' (overwrite)
+vnoremap <leader>y "ay
+
+" Yank visually selected text into register 'a' (append)
+vnoremap <leader>Y "Ay
+
+" Copy contents of register 'a' to system clipboard using xclip
+nnoremap <leader>ca :call system('xclip -selection clipboard', getreg('a'))<CR>
+
+" markdown in black and white
+autocmd FileType markdown set t_Co=0
+
+function! ClearRegisters()
+  let regs = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-="*+'
+  for r in split(regs, '\zs')
+    call setreg(r, [])
+  endfor
+endfunction
+command! ClearRegisters call ClearRegisters()
+

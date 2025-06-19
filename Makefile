@@ -11,9 +11,9 @@ init:
 	@echo "[INFO] Initialized bare repo and added alias."
 
 backup:
-	@git --git-dir=$(DOTFILES_DIR) --work-tree=$(HOME) add .bashrc .config/vim/vimrc .Xresources Makefile
+	@git --git-dir=$(DOTFILES_DIR) --work-tree=$(HOME) add .bashrc .config/vim/vimrc .Xresources Makefile .tern-project
 	@git --git-dir=$(DOTFILES_DIR) --work-tree=$(HOME) commit -m "Backup dotfiles"
-	@git --git-dir=$(DOTFILES_DIR) --work-tree=$(HOME) push origin master
+	@proxychains git --git-dir=$(DOTFILES_DIR) --work-tree=$(HOME) push origin master
 	@echo "[INFO] Dotfiles backed up."
 
 clone:

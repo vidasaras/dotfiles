@@ -250,10 +250,28 @@ nnoremap <leader>ca :call system('xclip -selection clipboard', getreg('a'))<CR>
 autocmd FileType markdown set t_Co=0
 
 function! ClearRegisters()
-  let regs = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-="*+'
-  for r in split(regs, '\zs')
-    call setreg(r, [])
-  endfor
+    let regs = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-="*+'
+    for r in split(regs, '\zs')
+        call setreg(r, [])
+    endfor
 endfunction
 command! ClearRegisters call ClearRegisters()
 
+" Plugins
+" =======
+" =======
+" curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+" Install vim-plug if not found
+if empty(glob('~/.config/vim/autoload/plug.vim'))
+    silent !curl -fLo ~/.config/vim/autoload/plug.vim --create-dirs
+                \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+
+" Run PlugInstall if there are missing plugins
+autocmd VimEnter * if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
+            \| PlugInstall --sync | source $MYVIMRC
+            \| endif
+
+call plug#begin()
+    Plug 'ternjs/tern_for_vim', { 'do' : 'pnpm install' }
+call plug#end()
